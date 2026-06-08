@@ -1,6 +1,6 @@
 # 🚀 Simple CI/CD Workflow Project
 
-> **한성대학교 소프트웨어공학(Software Engineering) 실습 과제**
+> **한성대학교 소프트웨어공학(Software Engineering)**
 > 본 저장소는 소프트웨어 공학 방법론에 기반한 지속적 통합(CI) 및 지속적 배포(CD) 파이프라인의 핵심 매커니즘을 이해하고, 자동화된 워크플로우(Workflow)를 설계 및 검증하기 위한 프로젝트입니다.
 
 ---
