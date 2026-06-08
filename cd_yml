@@ -1,0 +1,78 @@
+name: CD
+ 
+on:
+  push:
+    branches: [main]
+ 
+permissions:
+  contents: read
+  packages: write
+  pages: write
+  id-token: write
+ 
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository }}
+ 
+jobs:
+  build-and-e2e:
+    name: 1) Docker 빌드 + E2E 테스트
+    runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: meta
+        run: echo "tag=sha-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+      - run: docker build -t calculator:test .
+      - run: docker run -d --rm --name calc -p 8080:80 calculator:test
+      - name: 컨테이너가 뜰 때까지 대기
+        run: |
+          for i in {1..20}; do
+            if curl -sf http://localhost:8080 >/dev/null; then echo OK; exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm ci 
+      - run: npx playwright install --with-deps chromium
+      - env:
+          BASE_URL: http://localhost:8080
+        run: npm run test:e2e
+      - if: always()
+        run: docker stop calc || true
+ 
+  push-image:
+    name: 2) GHCR에 이미지 등록
+    runs-on: ubuntu-latest
+    needs: build-and-e2e
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - run: |
+          IMAGE=${IMAGE_NAME,,}
+          docker build -t $IMAGE:latest -t $IMAGE:${{ needs.build-and-e2e.outputs.image-tag }} .
+          docker push $IMAGE:latest
+          docker push $IMAGE:${{ needs.build-and-e2e.outputs.image-tag }}
+ 
+  deploy-pages:
+    name: 3) GitHub Pages 배포
+    runs-on: ubuntu-latest
+    needs: build-and-e2e
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: src
+      - id: deploy
+        uses: actions/deploy-pages@v4
