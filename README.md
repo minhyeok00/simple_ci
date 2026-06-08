@@ -1,6 +1,6 @@
 # 🚀 Simple CI/CD Workflow Project
 
-> **한성대학교 소프트웨어공학 (Software Engineering) 실습 과제**
+> **한성대학교 소프트웨어공학 (Software Engineering)**
 > 본 프로젝트는 GitHub Actions 환경에서 실제 작동하는 지속적 통합(CI) 및 지속적 배포(CD) 자동화 파이프라인을 설계하고 구축하여, 소프트웨어 공학의 자동화 릴리스 메커니즘을 검증하기 위한 저장소입니다.
 
 ---
@@ -15,13 +15,14 @@
 
 ---
 
-## 🔄 수업 사양 기반 CI/CD 파이프라인 아키텍처 (Pipeline Flow)
+## 🔄 CI/CD 파이프라인 아키텍처 (Pipeline Flow)
 
-수업 명세에 따라 본 파이프라인은 단계별 종속성(`needs`)을 지닌 **2단계 격리형 CI Gate**와 **CD 무중단 배포 검증** 구조로 설계되었습니다.
+파이프라인은 단계별 종속성(`needs`)을 지닌 **2단계 격리형 CI Gate**와 **CD 무중단 배포 검증** 구조로 설계되었습니다.
 
-[Local Code Commit]
-│
-▼ (Git Push / Pull Request to main, develop)
+```text
+[Local Code Commit] 
+       │
+       ▼ (Git Push / Pull Request to main, develop)
 ┌────────────────────────────────────────────────────────┐
 │  ▶ STAGE 1: Static Analysis & Security Verification    │
 │  ┌──────────────────────┐    ┌──────────────────────┐  │
@@ -29,8 +30,8 @@
 │  │ (ESLint+Type Check)  │    │ (npm audit + Trivy)  │  │
 │  └──────────┬───────────┘    └──────────┬───────────┘  │
 └─────────────┼───────────────────────────┼──────────────┘
-└─────────────┬─────────────┘
-▼ (CI Gate: Both Jobs Must Success)
+              └─────────────┬─────────────┘
+                            ▼ (CI Gate: Both Jobs Must Success)
 ┌────────────────────────────────────────────────────────┐
 │  ▶ STAGE 2: Automated Quality & Logic Assurance        │
 │  ┌──────────────────────┐    ┌──────────────────────┐  │
@@ -38,8 +39,8 @@
 │  │   (Vitest & Jest)    │    │ (Coverage Target 80%)│  │
 │  └──────────────────────┘    └──────────────────────┘  │
 └────────────────────────────────────────────────────────┘
-│
-▼ (Automated CD Pipeline Triggered)
+                            │
+                            ▼ (Automated CD Pipeline Triggered)
 ┌────────────────────────────────────────────────────────┐
 │  ▶ STAGE 3: Immutable Build & Continuous Delivery      │
 │  ┌──────────────────────────────────────────────────┐  │
@@ -50,7 +51,6 @@
 │  │  5. Post-Deployment Verification (Smoke Test)     │  │
 │  └──────────────────────────────────────────────────┘  │
 └────────────────────────────────────────────────────────┘
-
 ---
 
 ## 📝 단계별 워크플로우 세부 작업 명세 (Job Specifications)
