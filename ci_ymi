@@ -1,0 +1,57 @@
+# CI - PR이 열릴 때, 그리고 main에 push될 때 자동으로 실행
+name: CI
+ 
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+ 
+jobs:
+  lint:
+    name: 1) 린트 검사 (ESLint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm ci
+      - run: npm run lint
+ 
+  security:
+    name: 2) 보안 검사 (npm audit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm ci
+      - run: npm run audit
+ 
+  unit-test:
+    name: 3) 단위 테스트 (Jest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm ci
+      - run: npm run test:unit
+ 
+  integration-test:
+    name: 4) 통합 테스트 (Jest + jsdom)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm ci
+      - run: npm run test:integration
